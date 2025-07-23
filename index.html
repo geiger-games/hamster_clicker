@@ -36,30 +36,81 @@
         <h3 id="hamsters"></h3>
         <h4 id="hpc"></h4>
         <button onclick="handleClick()">
-            <img src="basic_hamster.png" alt="Hamster" style="width: 256px; height: 256px;">
+            <img id="hamsterImg" src="basic_hamster.png" alt="Hamster" style="width: 256px; height: 256px;">
         </button><br>
-        <button onclick="handleHamstersPerClick(10, 1, 0)" class="hpcBuy">buy +1 hamsters per click: 10$</button><br>
-        <button onclick="handleHamstersPerClick(100, 10, 1)" class="hpcBuy">buy +10 hamsters per click: 100$</button>
+        <label for="textureSelect">Choose your hamster:</label>
+        <select id="textureSelect" onchange="changeSkin(this.value)">
+            <option value="basic_hamster.png">Normal</option>
+            <option value="cheese_hamster.png" id="cheeseTexture" disabled>Cheese (locked)</option>
+            <option value="fancy_hamster.png" id="fancyTexture" disabled>Fancy (locked)</option>
+        </select><br>
+        <button onclick="handleHamstersPerClick(1, 0)" class="hpcBuy">buy +1 hamsters per click: 0$</button>
+        <button onclick="handleHamstersPerClick(10, 1)" class="hpcBuy">buy +10 hamsters per click: 0$</button>
+        <button onclick="handleHamstersPerClick(100, 2)" class="hpcBuy">buy +100 hamsters per click: 0$</button><br>
+        <button onclick="handleHamstersPerClick(1_000, 3)" class="hpcBuy">buy +1k hamsters per click: 0$</button>
+        <button onclick="handleHamstersPerClick(10_000, 4)" class="hpcBuy">buy +10k hamsters per click: 0$</button>
+        <button onclick="handleHamstersPerClick(100_000, 5)" class="hpcBuy">buy +100k hamsters per click: 0$</button><br>
 
         <script>
             const hamstersEl = document.getElementById("hamsters")
             const hpcEl = document.getElementById("hpc")
 
             const buttons = document.getElementsByClassName("hpcBuy")
-            const basePrices = [10, 100]
+            const basePrices = [10, 100, 1_000, 10_000, 100_000, 1_000_000]
 
             var hamsters = 0
             var hpc = 1
-            var multipliers = [1, 1, 1]
+            var multipliers = [1, 1, 1, 1, 1, 1]
+
+            function changeSkin(filename) {
+                const hamsterImg = document.getElementById("hamsterImg");
+                hamsterImg.src = filename;
+            }
+
+            function abbreviate(value) {
+                const suffixes = ["", "k", "m", "b", "t"]
+                let index = 0
+                let num = typeof value === "string" ? unabbreviate(value) : value;
+                while (num >= 1000 && index < suffixes.length - 1) {
+                    num /= 1000
+                    index++
+                }
+                return num.toFixed(3) + suffixes[index]
+            }
+
+            function unabbreviate(value) {
+                const suffixes = ["", "k", "m", "b", "t"]
+                let index = 0
+                let num
+                if (suffixes.includes(value.slice(-1))) {
+                    index = suffixes.indexOf(value.slice(-1))
+                    num = parseFloat(value.slice(0, -1), 10)
+                } else {
+                    num = parseFloat(value, 10)
+                }
+                
+                return num * Math.pow(1000, index)
+            }
+
+            function unlock_texture(cost, id) {
+                if (hamsters >= cost) {
+                    const optionEl = document.getElementById(id)
+                    optionEl.disabled = false
+                    optionEl.innerHTML = optionEl.innerHTML.replace(" (locked)", "")
+                }
+            }
 
             function update() {
-                hamstersEl.innerHTML = hamsters === 1 ? "1 hamster" : `${hamsters} hamsters`
-                hpcEl.innerHTML = hpc === 1 ? "1 hamster per click" : `${hpc} hamsters per click`
+                hamstersEl.innerHTML = hamsters === 1 ? "1 hamster" : `${abbreviate(hamsters)} hamsters`
+                hpcEl.innerHTML = hpc === 1 ? "1 hamster per click" : `${abbreviate(hpc)} hamsters per click`
 
                 for (let i = 0; i < buttons.length; i++) {
                     const price = Math.floor(basePrices[i] * multipliers[i])
-                    buttons[i].innerHTML = buttons[i].innerHTML.replace(/\d+\$/, `${price}$`)
+                    buttons[i].innerHTML = buttons[i].innerHTML.replace(/\d+(\.\d+)?\w?\$/, `${abbreviate(price)}$`)
                 }
+
+                unlock_texture(500, "cheeseTexture")
+                unlock_texture(1_000, "fancyTexture")
             }
 
             function handleClick() {
@@ -67,8 +118,8 @@
                 update()
             }
 
-            function handleHamstersPerClick(price, increment, index) {
-                const cost = Math.floor(price * multipliers[index])
+            function handleHamstersPerClick(increment, index) {
+                const cost = Math.floor(basePrices[index] * multipliers[index])
                 if (hamsters >= cost) {
                     hpc += increment
                     hamsters -= cost
