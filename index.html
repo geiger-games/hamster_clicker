@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            body {
+                text-align: center;
+                font-family: sans-serif;
+                background-color: #fef9ef;
+            }
+
+            button {
+                background-color: #0000ff;
+                color: white;
+                border: 4px solid #666666;
+                border-radius: 8px;
+                font-size: 16px;
+                padding: 10px 20px;
+                margin: 10px 10px;
+                cursor: pointer;
+            }
+            button:hover {
+                background-color: #7777ff;
+                color: #aaaaaa;
+            }
+            button:active {
+                background-color: #aaaaff;
+                color: #666666;
+                transform: scale(0.9);
+            }
+        </style>
+        <title>Hamster Clicker</title>
+    </head>
+
+    <body>
+        <h1>🐹 Hamster Clicker</h1>
+        <h3 id="hamsters"></h3>
+        <h4 id="hpc"></h4>
+        <button onclick="handleClick()">
+            <img src="basic_hamster.png" alt="Hamster" style="width: 256px; height: 256px;">
+        </button><br>
+        <button onclick="handleHamstersPerClick(10, 1, 0)" class="hpcBuy">buy +1 hamsters per click: 10$</button><br>
+        <button onclick="handleHamstersPerClick(100, 10, 1)" class="hpcBuy">buy +10 hamsters per click: 100$</button>
+
+        <script>
+            const hamstersEl = document.getElementById("hamsters")
+            const hpcEl = document.getElementById("hpc")
+
+            const buttons = document.getElementsByClassName("hpcBuy")
+            const basePrices = [10, 100]
+
+            var hamsters = 0
+            var hpc = 1
+            var multipliers = [1, 1, 1]
+
+            function update() {
+                hamstersEl.innerHTML = hamsters === 1 ? "1 hamster" : `${hamsters} hamsters`
+                hpcEl.innerHTML = hpc === 1 ? "1 hamster per click" : `${hpc} hamsters per click`
+
+                for (let i = 0; i < buttons.length; i++) {
+                    const price = Math.floor(basePrices[i] * multipliers[i])
+                    buttons[i].innerHTML = buttons[i].innerHTML.replace(/\d+\$/, `${price}$`)
+                }
+            }
+
+            function handleClick() {
+                hamsters += hpc;
+                update()
+            }
+
+            function handleHamstersPerClick(price, increment, index) {
+                const cost = Math.floor(price * multipliers[index])
+                if (hamsters >= cost) {
+                    hpc += increment
+                    hamsters -= cost
+                    multipliers[index] *= 1.2
+                    update()
+                } else {
+                    alert("Not enough hamsters!")
+                }
+            }
+
+            update()
+        </script>
+    </body>
+</html>
